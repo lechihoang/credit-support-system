@@ -1,0 +1,12 @@
+.venv/
+.git/
+.github/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+mlruns/
+outputs/
+logs/
+data/
+web-demo/
