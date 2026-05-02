@@ -1,0 +1,6 @@
+azure-ai-contentsafety
+azure-identity
+azure-search-documents==11.4.0
+openai
+promptflow
+promptflow-tools

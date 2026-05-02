@@ -1,0 +1,76 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+name: credit_card_support
+display_name: "Credit Card Support Chatbot"
+type: chat
+
+inputs:
+  chat_history:
+    type: list
+    is_chat_history: true
+    default: []
+  question:
+    type: string
+    is_chat_input: true
+
+outputs:
+  answer:
+    type: string
+    reference: ${format_final_response.output}
+    is_chat_output: true
+  context:
+    type: string
+    reference: ${lookup.output.context}
+
+nodes:
+- name: content_safety
+  type: python
+  source:
+    type: code
+    path: content_safety_flow.py
+  inputs:
+    connection: conn-content-safety
+    question: ${inputs.question}
+
+- name: lookup
+  type: python
+  source:
+    type: code
+    path: lookup_azure_search.py
+  inputs:
+    connection: conn-ai-search
+    question: ${content_safety.output.question}
+    embedding_connection: conn-aoai-embed
+    embedding_deployment_name: text-embedding-3-small
+    top_k: 5
+    index_name: rag-index
+    is_safe: ${content_safety.output.is_safe}
+
+- name: chat_with_llm
+  type: llm
+  source:
+    type: code
+    path: chat.jinja2
+  connection: conn-aoai-chat
+  inputs:
+    deployment_name: gpt-4o-mini
+    temperature: 0.0
+    max_tokens: 2048
+    question: ${lookup.output.question}
+    context: ${lookup.output.context}
+    chat_history: ${inputs.chat_history}
+  api: chat
+  activate:
+    when: ${content_safety.output.is_safe}
+    is: true
+
+- name: format_final_response
+  type: python
+  source:
+    type: code
+    path: format_response.py
+  inputs:
+    safety_output: ${content_safety.output}
+    llm_output: ${chat_with_llm.output}
+
+environment:
+  python_requirements_txt: requirements.txt

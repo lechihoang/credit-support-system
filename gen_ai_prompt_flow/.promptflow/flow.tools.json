@@ -1,0 +1,108 @@
+{
+    "package": {},
+    "code": {
+        "content_safety_flow.py": {
+            "type": "python",
+            "inputs": {
+                "connection": {
+                    "type": [
+                        "AzureContentSafetyConnection"
+                    ]
+                },
+                "question": {
+                    "type": [
+                        "string"
+                    ]
+                }
+            },
+            "description": "B\u01af\u1edaC 1: Ki\u1ec3m tra an to\u00e0n cho c\u00e2u h\u1ecfi hi\u1ec7n t\u1ea1i.",
+            "source": "content_safety_flow.py",
+            "function": "check_safety"
+        },
+        "lookup_azure_search.py": {
+            "type": "python",
+            "inputs": {
+                "connection": {
+                    "type": [
+                        "CognitiveSearchConnection"
+                    ]
+                },
+                "question": {
+                    "type": [
+                        "string"
+                    ]
+                },
+                "embedding_connection": {
+                    "type": [
+                        "AzureOpenAIConnection"
+                    ]
+                },
+                "index_name": {
+                    "type": [
+                        "string"
+                    ]
+                },
+                "embedding_deployment_name": {
+                    "type": [
+                        "string"
+                    ],
+                    "default": "text-embedding-3-small"
+                },
+                "top_k": {
+                    "type": [
+                        "int"
+                    ],
+                    "default": "5"
+                },
+                "is_safe": {
+                    "type": [
+                        "bool"
+                    ],
+                    "default": "True"
+                }
+            },
+            "description": "B\u01af\u1edaC 2: T\u00ecm ki\u1ebfm d\u1eef li\u1ec7u.",
+            "source": "lookup_azure_search.py",
+            "function": "retrieve"
+        },
+        "chat.jinja2": {
+            "type": "llm",
+            "inputs": {
+                "context": {
+                    "type": [
+                        "string"
+                    ]
+                },
+                "question": {
+                    "type": [
+                        "string"
+                    ]
+                },
+                "chat_history": {
+                    "type": [
+                        "string"
+                    ]
+                }
+            },
+            "source": "chat.jinja2"
+        },
+        "format_response.py": {
+            "type": "python",
+            "inputs": {
+                "safety_output": {
+                    "type": [
+                        "object"
+                    ]
+                },
+                "llm_output": {
+                    "type": [
+                        "string"
+                    ]
+                }
+            },
+            "description": "B\u01af\u1edaC CU\u1ed0I: \u0110\u1ecbnh d\u1ea1ng k\u1ebft qu\u1ea3 tr\u1ea3 v\u1ec1 cho ng\u01b0\u1eddi d\u00f9ng.",
+            "source": "format_response.py",
+            "function": "format_response"
+        }
+    }
+}
