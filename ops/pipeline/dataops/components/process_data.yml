@@ -1,0 +1,19 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: dataops_process_data
+display_name: DataOps Process Data
+version: 1
+code: ../../../../
+environment: azureml:mlops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  raw_mlops:
+    type: uri_folder
+outputs:
+  processed_mlops:
+    type: uri_folder
+command: >-
+  python steps/dataops/step_process_data.py
+  --raw-mlops ${{inputs.raw_mlops}}
+  --processed-mlops ${{outputs.processed_mlops}}

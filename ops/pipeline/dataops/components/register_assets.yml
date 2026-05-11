@@ -1,0 +1,18 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: dataops_register_assets
+display_name: DataOps Register Assets
+version: 1
+code: ../../../../
+environment: azureml:mlops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  processed_mlops:
+    type: uri_folder
+command: >-
+  cat ${{inputs.processed_mlops}}/train_data_mltable/MLTable > /dev/null
+  &&
+  cat ${{inputs.processed_mlops}}/test_data_mltable/MLTable > /dev/null
+  &&
+  python steps/dataops/step_register_assets.py

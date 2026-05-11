@@ -1,0 +1,34 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: dataops_pipeline
+experiment_name: dataops
+inputs:
+  raw_mlops_path: azureml://datastores/workspaceblobstore/paths/data/mlops/raw
+  raw_genaiops_path: azureml://datastores/workspaceblobstore/paths/data/genaiops/raw
+  processed_mlops_path: azureml://datastores/workspaceblobstore/paths/data/mlops/processed
+settings:
+  default_compute: azureml:compute-cluster
+jobs:
+  fetch_data:
+    component: ./components/fetch_data.yml
+    outputs:
+      raw_mlops:
+        mode: rw_mount
+        path: ${{parent.inputs.raw_mlops_path}}
+      raw_genaiops:
+        mode: rw_mount
+        path: ${{parent.inputs.raw_genaiops_path}}
+
+  process_data:
+    component: ./components/process_data.yml
+    inputs:
+      raw_mlops: ${{parent.jobs.fetch_data.outputs.raw_mlops}}
+    outputs:
+      processed_mlops:
+        mode: rw_mount
+        path: ${{parent.inputs.processed_mlops_path}}
+
+  register_assets:
+    component: ./components/register_assets.yml
+    inputs:
+      processed_mlops: ${{parent.jobs.process_data.outputs.processed_mlops}}

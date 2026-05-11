@@ -1,0 +1,18 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: dataops_fetch_data
+display_name: DataOps Fetch Data
+version: 1
+code: ../../../../
+environment: azureml:mlops-env@latest
+identity:
+  type: managed_identity
+outputs:
+  raw_mlops:
+    type: uri_folder
+  raw_genaiops:
+    type: uri_folder
+command: >-
+  python steps/dataops/step_fetch_data.py
+  --raw-mlops ${{outputs.raw_mlops}}
+  --raw-genaiops ${{outputs.raw_genaiops}}
