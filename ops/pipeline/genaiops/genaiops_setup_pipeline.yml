@@ -1,0 +1,65 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: genaiops_setup_pipeline
+experiment_name: genaiops
+inputs:
+  aoai_conn_name: conn-aoai-chat
+  embed_conn_name: conn-aoai-embed
+  search_conn_name: conn-ai-search
+  safety_conn_name: conn-content-safety
+  chat_deployment_name: gpt-4o-mini
+  embedding_deployment_name: text-embedding-3-small
+  index_name: rag-index
+  data_source_name: rag-ds
+  indexer_name: rag-indexer
+  rag_asset_name: rag_pdf
+  rag_asset_version: latest
+  aoai_endpoint: ""
+  aoai_resource_id: ""
+  aoai_api_key: ""
+  search_endpoint: ""
+  search_api_key: ""
+  content_safety_endpoint: ""
+  content_safety_key: ""
+  storage_connection_string: ""
+settings:
+  default_compute: azureml:compute-cluster
+jobs:
+  provision_models:
+    component: ./components/provision_models.yml
+    inputs:
+      aoai_endpoint: ${{parent.inputs.aoai_endpoint}}
+      chat_deployment_name: ${{parent.inputs.chat_deployment_name}}
+      embedding_deployment_name: ${{parent.inputs.embedding_deployment_name}}
+
+  build_search_index:
+    component: ./components/build_search_index.yml
+    inputs:
+      provision_models_done: ${{parent.jobs.provision_models.outputs.done_file}}
+      search_endpoint: ${{parent.inputs.search_endpoint}}
+      search_api_key: ${{parent.inputs.search_api_key}}
+      storage_connection_string: ${{parent.inputs.storage_connection_string}}
+      aoai_endpoint: ${{parent.inputs.aoai_endpoint}}
+      aoai_api_key: ${{parent.inputs.aoai_api_key}}
+      embedding_deployment_name: ${{parent.inputs.embedding_deployment_name}}
+      index_name: ${{parent.inputs.index_name}}
+      data_source_name: ${{parent.inputs.data_source_name}}
+      indexer_name: ${{parent.inputs.indexer_name}}
+      rag_asset_name: ${{parent.inputs.rag_asset_name}}
+      rag_asset_version: ${{parent.inputs.rag_asset_version}}
+
+  create_connections:
+    component: ./components/create_connections.yml
+    inputs:
+      build_search_index_done: ${{parent.jobs.build_search_index.outputs.done_file}}
+      aoai_conn_name: ${{parent.inputs.aoai_conn_name}}
+      embed_conn_name: ${{parent.inputs.embed_conn_name}}
+      search_conn_name: ${{parent.inputs.search_conn_name}}
+      safety_conn_name: ${{parent.inputs.safety_conn_name}}
+      aoai_endpoint: ${{parent.inputs.aoai_endpoint}}
+      aoai_resource_id: ${{parent.inputs.aoai_resource_id}}
+      aoai_api_key: ${{parent.inputs.aoai_api_key}}
+      search_endpoint: ${{parent.inputs.search_endpoint}}
+      search_api_key: ${{parent.inputs.search_api_key}}
+      content_safety_endpoint: ${{parent.inputs.content_safety_endpoint}}
+      content_safety_key: ${{parent.inputs.content_safety_key}}

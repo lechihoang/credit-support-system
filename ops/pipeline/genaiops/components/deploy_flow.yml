@@ -1,0 +1,39 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: genaiops_deploy_flow
+display_name: GenAIOps Deploy Flow Endpoint
+version: 1
+code: ../../../../
+environment: azureml:genaiops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  register_flow_model_done:
+    type: uri_file
+  endpoint_name:
+    type: string
+    default: genaiops-flow-endpoint
+  deployment_name:
+    type: string
+    default: blue
+  model_name:
+    type: string
+    default: credit-card-support-flow-model
+  model_version_file:
+    type: uri_file
+  instance_type:
+    type: string
+    default: Standard_DS1_v2
+  instance_count:
+    type: integer
+    default: 1
+command: >-
+  cat ${{inputs.register_flow_model_done}} > /dev/null
+  &&
+  python steps/genaiops/step_deploy_flow_endpoint.py
+  --endpoint-name ${{inputs.endpoint_name}}
+  --deployment-name ${{inputs.deployment_name}}
+  --model-name ${{inputs.model_name}}
+  --model-version-file ${{inputs.model_version_file}}
+  --instance-type ${{inputs.instance_type}}
+  --instance-count ${{inputs.instance_count}}

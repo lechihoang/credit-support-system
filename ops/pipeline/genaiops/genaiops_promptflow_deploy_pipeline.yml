@@ -1,0 +1,38 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: genaiops_promptflow_deploy_pipeline
+experiment_name: genaiops
+inputs:
+  flow_model_name: credit-card-support-flow-model
+  flow_path: gen_ai_prompt_flow
+  flow_display_name: credit-support-chatbot
+  endpoint_name: genaiops-flow-endpoint
+  deployment_name: blue
+  instance_type: Standard_DS1_v2
+  instance_count: 1
+settings:
+  default_compute: azureml:compute-cluster
+jobs:
+  publish_prompt_flow:
+    component: ./components/publish_prompt_flow.yml
+    inputs:
+      flow_path: ${{parent.inputs.flow_path}}
+      flow_display_name: ${{parent.inputs.flow_display_name}}
+
+  register_flow_model:
+    component: ./components/register_flow_model.yml
+    inputs:
+      publish_prompt_flow_done: ${{parent.jobs.publish_prompt_flow.outputs.done_file}}
+      model_name: ${{parent.inputs.flow_model_name}}
+      flow_path: ${{parent.inputs.flow_path}}
+
+  deploy_flow:
+    component: ./components/deploy_flow.yml
+    inputs:
+      register_flow_model_done: ${{parent.jobs.register_flow_model.outputs.done_file}}
+      model_version_file: ${{parent.jobs.register_flow_model.outputs.version_file}}
+      endpoint_name: ${{parent.inputs.endpoint_name}}
+      deployment_name: ${{parent.inputs.deployment_name}}
+      model_name: ${{parent.inputs.flow_model_name}}
+      instance_type: ${{parent.inputs.instance_type}}
+      instance_count: ${{parent.inputs.instance_count}}

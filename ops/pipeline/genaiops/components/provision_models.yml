@@ -1,0 +1,29 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: genaiops_provision_models
+display_name: GenAIOps Provision Models
+version: 1
+code: ../../../../
+environment: azureml:genaiops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  aoai_endpoint:
+    type: string
+  chat_deployment_name:
+    type: string
+    default: gpt-4o-mini
+  embedding_deployment_name:
+    type: string
+    default: text-embedding-3-small
+environment_variables:
+  AZURE_OPENAI_ENDPOINT: ${{inputs.aoai_endpoint}}
+outputs:
+  done_file:
+    type: uri_file
+command: >-
+  python steps/genaiops/step_provision_foundry_models.py
+  --chat-deployment-name ${{inputs.chat_deployment_name}}
+  --embedding-deployment-name ${{inputs.embedding_deployment_name}}
+  --aoai-endpoint ${{inputs.aoai_endpoint}}
+  && echo done > ${{outputs.done_file}}

@@ -1,0 +1,67 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: genaiops_build_search_index
+display_name: GenAIOps Build Search Index
+version: 1
+code: ../../../../
+environment: azureml:genaiops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  provision_models_done:
+    type: uri_file
+  search_endpoint:
+    type: string
+  search_api_key:
+    type: string
+  storage_connection_string:
+    type: string
+    default: ""
+  aoai_endpoint:
+    type: string
+  aoai_api_key:
+    type: string
+    default: ""
+  embedding_deployment_name:
+    type: string
+    default: text-embedding-3-small
+  index_name:
+    type: string
+    default: rag-index
+  data_source_name:
+    type: string
+    default: rag-ds
+  indexer_name:
+    type: string
+    default: rag-indexer
+  rag_asset_name:
+    type: string
+    default: rag_pdf
+  rag_asset_version:
+    type: string
+    default: latest
+environment_variables:
+  AZURE_SEARCH_ENDPOINT: ${{inputs.search_endpoint}}
+  AZURE_SEARCH_API_KEY: ${{inputs.search_api_key}}
+  AZURE_STORAGE_CONNECTION_STRING: ${{inputs.storage_connection_string}}
+  AZURE_OPENAI_ENDPOINT: ${{inputs.aoai_endpoint}}
+  AZURE_OPENAI_API_KEY: ${{inputs.aoai_api_key}}
+outputs:
+  done_file:
+    type: uri_file
+command: >-
+  cat ${{inputs.provision_models_done}} > /dev/null
+  &&
+  python steps/genaiops/step_build_search_index.py
+  --index-name ${{inputs.index_name}}
+  --data-source-name ${{inputs.data_source_name}}
+  --indexer-name ${{inputs.indexer_name}}
+  --rag-asset-name ${{inputs.rag_asset_name}}
+  --rag-asset-version ${{inputs.rag_asset_version}}
+  --search-endpoint ${{inputs.search_endpoint}}
+  --search-api-key ${{inputs.search_api_key}}
+  --storage-connection-string "${{inputs.storage_connection_string}}"
+  --aoai-endpoint ${{inputs.aoai_endpoint}}
+  --aoai-api-key "${{inputs.aoai_api_key}}"
+  --embedding-deployment-name ${{inputs.embedding_deployment_name}}
+  && echo done > ${{outputs.done_file}}

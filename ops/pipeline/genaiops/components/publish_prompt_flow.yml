@@ -1,0 +1,24 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: genaiops_publish_prompt_flow
+display_name: GenAIOps Publish Prompt Flow
+version: 1
+code: ../../../../
+environment: azureml:genaiops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  flow_path:
+    type: string
+    default: gen_ai_prompt_flow
+  flow_display_name:
+    type: string
+    default: credit-support-chatbot
+outputs:
+  done_file:
+    type: uri_file
+command: >-
+  python steps/genaiops/step_publish_prompt_flow.py
+  --flow-path ${{inputs.flow_path}}
+  --flow-display-name ${{inputs.flow_display_name}}
+  && echo done > ${{outputs.done_file}}

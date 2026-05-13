@@ -1,0 +1,31 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: genaiops_register_flow_model
+display_name: GenAIOps Register Flow Model
+version: 1
+code: ../../../../
+environment: azureml:genaiops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  publish_prompt_flow_done:
+    type: uri_file
+  model_name:
+    type: string
+    default: credit-card-support-flow-model
+  flow_path:
+    type: string
+    default: gen_ai_prompt_flow
+outputs:
+  done_file:
+    type: uri_file
+  version_file:
+    type: uri_file
+command: >-
+  cat ${{inputs.publish_prompt_flow_done}} > /dev/null
+  &&
+  python steps/genaiops/step_register_flow_model.py
+  --model-name ${{inputs.model_name}}
+  --flow-path ${{inputs.flow_path}}
+  --version-out ${{outputs.version_file}}
+  && echo done > ${{outputs.done_file}}

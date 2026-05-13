@@ -1,0 +1,67 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: genaiops_create_connections
+display_name: GenAIOps Create Connections
+version: 1
+code: ../../../../
+environment: azureml:genaiops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  build_search_index_done:
+    type: uri_file
+  aoai_conn_name:
+    type: string
+    default: conn-aoai-chat
+  embed_conn_name:
+    type: string
+    default: conn-aoai-embed
+  search_conn_name:
+    type: string
+    default: conn-ai-search
+  safety_conn_name:
+    type: string
+    default: conn-content-safety
+  aoai_endpoint:
+    type: string
+  aoai_resource_id:
+    type: string
+    default: ""
+  aoai_api_key:
+    type: string
+    default: ""
+  search_endpoint:
+    type: string
+  search_api_key:
+    type: string
+  content_safety_endpoint:
+    type: string
+  content_safety_key:
+    type: string
+environment_variables:
+  AZURE_OPENAI_ENDPOINT: ${{inputs.aoai_endpoint}}
+  AZURE_OPENAI_RESOURCE_ID: ${{inputs.aoai_resource_id}}
+  AZURE_OPENAI_API_KEY: ${{inputs.aoai_api_key}}
+  AZURE_SEARCH_ENDPOINT: ${{inputs.search_endpoint}}
+  AZURE_SEARCH_API_KEY: ${{inputs.search_api_key}}
+  AZURE_CONTENT_SAFETY_ENDPOINT: ${{inputs.content_safety_endpoint}}
+  AZURE_CONTENT_SAFETY_KEY: ${{inputs.content_safety_key}}
+outputs:
+  done_file:
+    type: uri_file
+command: >-
+  cat ${{inputs.build_search_index_done}} > /dev/null
+  &&
+  python steps/genaiops/step_create_connections.py
+  --aoai-conn-name ${{inputs.aoai_conn_name}}
+  --embed-conn-name ${{inputs.embed_conn_name}}
+  --search-conn-name ${{inputs.search_conn_name}}
+  --safety-conn-name ${{inputs.safety_conn_name}}
+  --aoai-endpoint ${{inputs.aoai_endpoint}}
+  --aoai-resource-id "${{inputs.aoai_resource_id}}"
+  --aoai-api-key ${{inputs.aoai_api_key}}
+  --search-endpoint ${{inputs.search_endpoint}}
+  --search-api-key ${{inputs.search_api_key}}
+  --content-safety-endpoint ${{inputs.content_safety_endpoint}}
+  --content-safety-key ${{inputs.content_safety_key}}
+  && echo done > ${{outputs.done_file}}
