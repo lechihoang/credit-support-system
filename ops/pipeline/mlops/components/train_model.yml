@@ -1,0 +1,29 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: mlops_train_model
+display_name: MLOps Train Model
+version: 1
+code: ../../../../
+environment: azureml:mlops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  train_data:
+    type: mltable
+  test_data:
+    type: mltable
+  model:
+    type: string
+  min_f1_gate:
+    type: number
+    default: 0.85
+outputs:
+  model_dir:
+    type: uri_folder
+command: >-
+  python mlop_training_job/train.py
+  --model ${{inputs.model}}
+  --train-path ${{inputs.train_data}}
+  --test-path ${{inputs.test_data}}
+  --min-f1-gate ${{inputs.min_f1_gate}}
+  --model-output-dir ${{outputs.model_dir}}

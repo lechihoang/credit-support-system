@@ -1,0 +1,37 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: mlops_drift_check
+experiment_name: mlops_drift
+inputs:
+  reference_data:
+    type: mltable
+    path: azureml:train_data@latest
+  current_inputs_root:
+    type: uri_folder
+    path: azureml://datastores/workspaceblobstore/paths/modelDataCollector/ml-endpoint
+  drift_threshold: 0.2
+outputs:
+  report:
+    type: uri_folder
+    path: azureml://datastores/workspaceblobstore/paths/data/mlops/monitoring/drift
+settings:
+  default_compute: azureml:compute-cluster
+jobs:
+  drift_check:
+    type: command
+    code: ../../..
+    inputs:
+      reference_data: ${{parent.inputs.reference_data}}
+      current_inputs_root: ${{parent.inputs.current_inputs_root}}
+      drift_threshold: ${{parent.inputs.drift_threshold}}
+    outputs:
+      report: ${{parent.outputs.report}}
+    command: >-
+      python steps/mlops/step_drift_check.py
+      --reference ${{inputs.reference_data}}
+      --current-inputs-root ${{inputs.current_inputs_root}}
+      --threshold ${{inputs.drift_threshold}}
+      --report-out ${{outputs.report}}/drift_report.json
+    environment: azureml:mlops-env@latest
+    identity:
+      type: managed_identity

@@ -1,0 +1,88 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: mlops_train_deploy_shift
+experiment_name: mlops
+inputs:
+  train_data:
+    type: mltable
+    path: azureml:train_data@latest
+  test_data:
+    type: mltable
+    path: azureml:test_data@latest
+  min_f1_gate: 0.85
+  endpoint_name: ml-endpoint
+  lr_model_name: lr-model
+  xgb_model_name: xgb-model
+  lr_deployment_name: logistic-regression
+  xgb_deployment_name: xgboost
+  instance_type: Standard_DS1_v2
+  instance_count: 1
+  inference_env: mlops-env@latest
+  scoring_script: score.py
+  lr_traffic: 50
+  xgb_traffic: 50
+settings:
+  default_compute: azureml:compute-cluster
+jobs:
+  train_lr:
+    component: ./components/train_model.yml
+    inputs:
+      train_data: ${{parent.inputs.train_data}}
+      test_data: ${{parent.inputs.test_data}}
+      model: lr
+      min_f1_gate: ${{parent.inputs.min_f1_gate}}
+
+  register_lr:
+    component: ./components/register_model.yml
+    inputs:
+      model_dir: ${{parent.jobs.train_lr.outputs.model_dir}}
+      model_name: ${{parent.inputs.lr_model_name}}
+
+  deploy_lr:
+    component: ./components/deploy_model.yml
+    inputs:
+      endpoint_name: ${{parent.inputs.endpoint_name}}
+      deployment_name: ${{parent.inputs.lr_deployment_name}}
+      model_name: ${{parent.inputs.lr_model_name}}
+      version_file: ${{parent.jobs.register_lr.outputs.version_file}}
+      instance_type: ${{parent.inputs.instance_type}}
+      instance_count: ${{parent.inputs.instance_count}}
+      inference_env: ${{parent.inputs.inference_env}}
+      scoring_script: ${{parent.inputs.scoring_script}}
+
+  train_xgb:
+    component: ./components/train_model.yml
+    inputs:
+      train_data: ${{parent.inputs.train_data}}
+      test_data: ${{parent.inputs.test_data}}
+      model: xgb
+      min_f1_gate: ${{parent.inputs.min_f1_gate}}
+
+  register_xgb:
+    component: ./components/register_model.yml
+    inputs:
+      model_dir: ${{parent.jobs.train_xgb.outputs.model_dir}}
+      model_name: ${{parent.inputs.xgb_model_name}}
+
+  deploy_xgb:
+    component: ./components/deploy_model.yml
+    inputs:
+      endpoint_name: ${{parent.inputs.endpoint_name}}
+      deployment_name: ${{parent.inputs.xgb_deployment_name}}
+      model_name: ${{parent.inputs.xgb_model_name}}
+      version_file: ${{parent.jobs.register_xgb.outputs.version_file}}
+      instance_type: ${{parent.inputs.instance_type}}
+      instance_count: ${{parent.inputs.instance_count}}
+      inference_env: ${{parent.inputs.inference_env}}
+      scoring_script: ${{parent.inputs.scoring_script}}
+
+  shift_traffic:
+    component: ./components/shift_traffic.yml
+    inputs:
+      deploy_lr_done: ${{parent.jobs.deploy_lr.outputs.done_file}}
+      deploy_xgb_done: ${{parent.jobs.deploy_xgb.outputs.done_file}}
+      endpoint_name: ${{parent.inputs.endpoint_name}}
+      lr_deployment: ${{parent.inputs.lr_deployment_name}}
+      xgb_deployment: ${{parent.inputs.xgb_deployment_name}}
+      lr_traffic: ${{parent.inputs.lr_traffic}}
+      xgb_traffic: ${{parent.inputs.xgb_traffic}}

@@ -1,0 +1,36 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: mlops_shift_traffic
+display_name: MLOps Shift Traffic
+version: 1
+code: ../../../../
+environment: azureml:mlops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  deploy_lr_done:
+    type: uri_file
+  deploy_xgb_done:
+    type: uri_file
+  endpoint_name:
+    type: string
+  lr_deployment:
+    type: string
+  xgb_deployment:
+    type: string
+  lr_traffic:
+    type: integer
+    default: 50
+  xgb_traffic:
+    type: integer
+    default: 50
+command: >-
+  cat ${{inputs.deploy_lr_done}} > /dev/null
+  && cat ${{inputs.deploy_xgb_done}} > /dev/null
+  &&
+  python steps/mlops/step_shift_traffic.py
+  --endpoint-name ${{inputs.endpoint_name}}
+  --lr-deployment ${{inputs.lr_deployment}}
+  --xgb-deployment ${{inputs.xgb_deployment}}
+  --lr-traffic ${{inputs.lr_traffic}}
+  --xgb-traffic ${{inputs.xgb_traffic}}

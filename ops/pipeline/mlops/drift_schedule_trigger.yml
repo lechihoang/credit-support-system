@@ -1,0 +1,8 @@
+$schema: https://azuremlschemas.azureedge.net/latest/schedule.schema.json
+name: drift-daily-7am
+display_name: detect-drift-daily
+trigger:
+  type: cron
+  expression: "0 0 * * *"
+  time_zone: "SE Asia Standard Time"
+create_job: ./drift_schedule.yml

@@ -1,0 +1,22 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+name: mlops_register_model
+display_name: MLOps Register Model
+version: 1
+code: ../../../../
+environment: azureml:mlops-env@latest
+identity:
+  type: managed_identity
+inputs:
+  model_dir:
+    type: uri_folder
+  model_name:
+    type: string
+outputs:
+  version_file:
+    type: uri_file
+command: >-
+  python steps/mlops/step_register_model.py
+  --model-dir ${{inputs.model_dir}}
+  --model-name ${{inputs.model_name}}
+  --version-out ${{outputs.version_file}}
