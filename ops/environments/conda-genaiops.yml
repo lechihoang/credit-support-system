@@ -1,0 +1,17 @@
+name: genaiops_env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - azure-ai-ml==1.26.3
+    - azureml-inference-server-http
+    - azure-identity>=1.17.0
+    - azure-mgmt-cognitiveservices>=13.6.0
+    - azure-search-documents==11.4.0
+    - azure-ai-contentsafety>=1.0.0
+    - openai>=1.40.0
+    - promptflow==1.18.5
+    - promptflow-azure==1.18.5
+    - promptflow-tools>=1.5.0
