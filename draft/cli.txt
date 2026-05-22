@@ -1,0 +1,36 @@
+az ml workspace create \
+    --name ml-techcombank \
+    --resource-group rg-techcombank \
+    --location eastus2
+
+
+
+
+
+# Xem workspace info
+az ml workspace show --resource-group rg-techcombank --name ml-techcombank                                                          
+                                                        
+# List compute clusters                                                                                                             
+az ml compute list --resource-group rg-techcombank --workspace-name ml-techcombank
+                                                                                                                                    
+# List datasets
+az ml data list --resource-group rg-techcombank --workspace-name ml-techcombank                                                     
+                                                        
+# List experiments (MLflow runs)                                                                                                    
+az ml run list --experiment-name banking77-intent-classification --resource-group rg-techcombank --workspace-name ml-techcombank
+                                                                                                                                    
+# List registered models                                                                                                            
+az ml model list --resource-group rg-techcombank --workspace-name ml-techcombank
+                                                                                                                                    
+# List endpoints                                          
+az ml online-endpoint list --resource-group rg-techcombank --workspace-name ml-techcombank
+
+
+Portal:
+
+# Đăng ký Microsoft.Cdn
+az provider register --namespace Microsoft.Cdn
+
+# Đăng ký Microsoft.PolicyInsights
+az provider register --namespace Microsoft.PolicyInsights
+

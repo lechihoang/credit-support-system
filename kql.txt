@@ -1,0 +1,146 @@
+// Truy vấn feedback từ bảng dependencies (Dữ liệu thực tế từ Azure Monitor)
+dependencies
+| where name == "promptflow-feedback"
+| extend f = parse_json(tostring(customDimensions.feedback))
+| project 
+    Time = timestamp, 
+    Useful = tostring(f.payload.useful), 
+    Question = tostring(f.payload.question), 
+    Answer = tostring(f.payload.answer),
+    TraceId = tostring(f.trace_id)
+| order by Time desc
+
+
+
+dependencies
+| where name == "promptflow-feedback"
+| extend f = parse_json(tostring(customDimensions.feedback))
+| extend Useful = tostring(f.payload.useful)
+| summarize FeedbackCount = count() by Useful
+| render barchart title="User Feedback Statistics"
+
+
+{
+    "data": [
+    { "text": "Câu tiếng việt để test data drift" }
+    ]
+}
+
+
+{
+    "data": [
+    { "text": "Câu tiếng việt để test data drift" }
+    ]
+}
+
+
+Hi there! Who are you and how can you help me today?
+How are insurance benefits handled for insured credit cards?
+Can you recommend some good restaurants in Thu Duc district?
+I hate shit
+
+
+
+Endpoint metrics nghĩa là gì
+
+  - Request latency: thời gian xử lý 1 request (ms). Quan trọng nhất là p50/p95/p99.
+  - Requests per second (RPS): số request/giây endpoint xử lý.
+  - Success rate / 4xx / 5xx:
+      - success: % request thành công
+      - 4xx: lỗi phía client (input sai, auth sai)
+      - 5xx: lỗi phía server/model
+  - CPU, Memory: mức sử dụng tài nguyên của instance deploy model.
+
+  Đo như thế nào (UI)
+
+  1. Vào Azure ML Studio -> Endpoints -> Online endpoints -> <endpoint> -> Metrics.
+  2. Chọn time range (ví dụ 30m lúc test).
+  3. Thêm chart:
+
+  - Request latency (Statistic: P50, P95, P99)
+  - Requests hoặc RPS
+  - HTTP status code (2xx/4xx/5xx)
+  - CPU utilization, Memory utilization
+
+  4. Filter theo deployment:
+
+  - logistic-regression
+  - xgboost
+
+  5. Chạy load test (gửi request liên tục), rồi đọc chart đúng time window.
+
+  DataOps đo gì
+
+  - duration từng node: fetch/process/register
+  - queued/preparing/running
+  - optional: blob metrics PutBlob/GetBlob latency, ingress/egress.
+
+  Train đo gì
+
+  - total training duration/job
+  - duration từng model (lr, xgb)
+  - queued/preparing/running
+  - optional: CPU/memory ở compute metrics.
+
+  Output báo cáo nên ghi
+
+  - p95 latency, RPS, %5xx, CPU avg/peak, Memory avg/peak
+  - so sánh theo deployment và theo region test.
+
+
+
+requests
+  | where timestamp > ago(24h)
+  | where tostring(customDimensions["url"]) has "ml-endpoint"
+  | where tostring(customDimensions["name"]) == "/score"
+  | extend d_ms = toreal(totimespan(tostring(customDimensions["duration"])) / 1ms)
+  | extend rc = tostring(customDimensions["resultCode"])
+  | where rc == "200" and d_ms > 0
+  | order by timestamp desc
+  | take 10
+  | summarize
+      min_ms=min(d_ms),
+      max_ms=max(d_ms),
+      avg_ms=avg(d_ms),
+      p95_ms=percentile(d_ms,95),
+      n=count()
+
+
+
+requests
+  | where timestamp > ago(24h)
+  | where name == "POST /score"
+  | where url has "genaiops-flow-endpoint"
+  | where toint(resultCode) == 200
+  | where todouble(duration) > 0
+  | order by timestamp desc
+  | take 10
+  | summarize
+      min_ms=min(todouble(duration)),
+      max_ms=max(todouble(duration)),
+      avg_ms=avg(todouble(duration)),
+      p95_ms=percentile(todouble(duration),95),
+      n=count()
+
+
+dependencies
+| where name == "promptflow-feedback"
+| extend f = parse_json(tostring(customDimensions.feedback))
+| extend Useful = tostring(f.payload.useful)
+| where Useful in ("Yes","No")
+| summarize FeedbackCount = count() by Useful
+| render barchart title="User Feedback Statistics"
+
+
+
+dependencies
+| where name == "promptflow-feedback"
+| extend f = parse_json(tostring(customDimensions.feedback))
+| project 
+    Time = timestamp, 
+    Useful = tostring(f.payload.useful), 
+    Question = tostring(f.payload.question), 
+    Answer = tostring(f.payload.answer),
+    TraceId = tostring(f.trace_id)
+| where Useful in ("Yes","No")
+| order by Time desc

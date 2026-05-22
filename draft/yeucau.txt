@@ -1,0 +1,43 @@
+Bài tập 14: XÂY DỰNG HỆ THỐNG PHÂN LOẠI Ý ĐỊNH VÀ TRỢ LÝ HỖ TRỢ TÍN DỤNG (MLOPS & GENAIOPS)
+1. Tổng quan bài toán
+Sinh viên cần xây dựng một hệ thống gồm hai thành phần chính:
+Phần MLOps: Mô hình phân loại (Classification) để phân loại email/tin nhắn của khách hàng vào các nhóm: Khiếu nại, Hỏi đáp số dư, Yêu cầu khóa thẻ, Gian lận.
+Phần GenAIOps: Một Chatbot thông minh sử dụng RAG (Retrieval Augmented Generation) để trả lời chi tiết các câu hỏi về chính sách sử dụng thẻ dựa trên tài liệu PDF của ngân hàng.
+
+2. Dữ liệu (DataOps)
+Nguồn dữ liệu: Banking77 Dataset (Chứa 13,083 truy vấn của khách hàng trực tuyến gắn với 77 ý định trong ngành ngân hàng).
+Dữ liệu nền tảng (Grounding Data): File PDF giả lập "Điều khoản và Điều kiện sử dụng thẻ tín dụng" (Sinh viên tự chuẩn bị hoặc sử dụng công cụ tạo văn bản, hoặc sử dụng tài liệu của một ngân hàng nào đó của Việt Nam).
+3. Yêu cầu chi tiết (Yêu cầu MLOps & GenAIOps)
+A. Giai đoạn Pre-production (Development)
+1. MLOps (Inner Loop):
+Task: Huấn luyện mô hình phân loại văn bản (Sử dụng Scikit-learn, XGBoost hoặc BERT).
+Tracking: Sử dụng MLflow để log lại: Accuracy, F1-score, và Confusion Matrix.
+Registry: Đăng ký phiên bản mô hình tốt nhất vào Azure ML Model Catalog.
+2. GenAIOps (Prompt Engineering & RAG):
+Model Selection: Lựa chọn mô hình từ Azure AI Foundry (ví dụ: GPT-4o hoặc Llama-3).
+Orchestration: Sử dụng Prompt Flow trong Azure AI để xây dựng luồng:
+Input: Câu hỏi của khách hàng.
+Retrieval: Tìm kiếm thông tin liên quan từ Vector Index (Azure AI Search).
+Prompting: Thiết kế System Message để AI trả lời chuyên nghiệp, từ tốn.
+Evaluation: Sử dụng các chỉ số GenAI (Groundedness, Relevance, Coherence) để đánh giá câu trả lời.
+B. Giai đoạn Production (Deployment & Monitoring)
+1. Deployment:
+Triển khai cả 2 thành phần dưới dạng Managed Online Endpoints.
+Thiết lập cơ chế Blue-Green Deployment cho mô hình phân loại để đảm bảo không có downtime khi cập nhật.
+2. Monitoring (Điểm khác biệt cốt lõi):
+MLOps Monitoring: Theo dõi Data Drift (Khi khách hàng dùng ngôn ngữ mới/tiếng lóng mới khiến mô hình phân loại sai).
+GenAIOps Monitoring: * Theo dõi Content Safety (Lọc các câu hỏi nhạy cảm hoặc độc hại).
+Human-in-the-loop: Thu thập phản hồi (Thích/Không thích) từ người dùng để điều chỉnh Prompt hoặc cập nhật dữ liệu RAG.
+
+4. Cấu hình YAML (GenAIOps - Prompt Flow) - tham khảo
+Sinh viên cần chuẩn bị file cấu hình cho Prompt Flow để triển khai trên Azure:
+
+5. Điều kiện
+Tính toàn vẹn: Pipeline chạy từ khâu xử lý dữ liệu (DataOps) đến khi ra Endpoint API.
+Chất lượng (Quality Gate): * Mô hình Classification đạt F1-score > 0.85.
+Chatbot GenAI không trả lời sai lệch thông tin trong tài liệu gốc (Groundedness score > 4/5).
+Báo cáo: So sánh chi phí vận hành (Compute cost) giữa việc huấn luyện mô hình nhỏ (MLOps) và gọi API mô hình lớn (GenAIOps).
+6. Tài liệu tham khảo
+Azure AI Foundry Documentation: Explore Models & Prompt Flow
+RAG Architecture Guide: Retrieval Augmented Generation on Azure
+MLOps vs GenAIOps: Operationalizing Generative AI
