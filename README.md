@@ -1,2 +1,1 @@
 # Credit Support System
-q
